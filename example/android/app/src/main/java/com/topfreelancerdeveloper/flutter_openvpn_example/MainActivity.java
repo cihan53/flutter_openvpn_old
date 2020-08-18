@@ -1,4 +1,4 @@
-package com.topfreelancerdeveloper.flutter_openvpn_example;
+package com.cihan53.hubboxvpn_app;
 
 import io.flutter.embedding.android.FlutterActivity;
 
