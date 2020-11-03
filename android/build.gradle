@@ -1,0 +1,41 @@
+group 'com.cihan53.HubboxVpn'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.1'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        minSdkVersion 22
+    }
+//    lintOptions {
+//        disable 'InvalidPackage'
+//    }
+    dependencies {
+//        implementation 'com.github.cihan53:flutter_openvpn_android_api:91f56a78de'
+    }
+}
+
+dependencies {
+    implementation project(path: ':openvpn')
+}
