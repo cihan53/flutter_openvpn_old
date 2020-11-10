@@ -7,8 +7,9 @@ class MobilHubModel {
   String password;
   String hub_name;
   String ip;
+  int id;
 
-  MobilHubModel(this.username, this.password, this.hub_name, this.ip);
+  MobilHubModel(this.id, this.username, this.password, this.hub_name, this.ip);
 
   MobilHubModel.map(dynamic obj) {
     // this._data = new List<VpnUser>.from(
@@ -18,6 +19,7 @@ class MobilHubModel {
     this.password = obj["password"];
     this.hub_name = obj["hub_name"];
     this.ip = obj["ip"];
+    this.id = obj["hub_id"];
   }
 
   Map<String, dynamic> toMap() {
@@ -26,6 +28,7 @@ class MobilHubModel {
     map["password"] = this.password;
     map["hub_name"] = this.hub_name;
     map["ip"] = this.ip;
+    map["id"] = this.id;
 
     return map;
   }

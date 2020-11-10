@@ -15,11 +15,15 @@ class RestDatasource {
 
 //  static final BASE_URL = "https://dev.hubbox.io/desktopapi/";
 //   static final BASE_URL = "http://172.17.7.137/api";
-  static final BASE_URL =
-      isProduction ? "https://dev.hubbox.io/api" : "http://192.168.143.100:8002/api";
+  static final BASE_URL = isProduction ? "https://my.hubbox.io/api" : "https://my.hubbox.io/api";
   static final LOGIN_URL = BASE_URL + "/v2/mobileaccount/authenticateMobile";
-  static final _API_KEY = "";
   static String _API_TOKEN = "";
+
+  static String get API_TOKEN => _API_TOKEN;
+
+  static set API_TOKEN(String value) {
+    _API_TOKEN = value;
+  }
 
   Map<String, String> header = {
     // "Content-type": "application/json",
@@ -29,6 +33,7 @@ class RestDatasource {
 
   Future<User> login(String username, String password) async {
     log("Login Url " + LOGIN_URL);
+    print("Login Url " + LOGIN_URL);
     return _netUtil
         .post(LOGIN_URL, body: {"username": username, "password": password}).then((dynamic res) {
       if (res["success"] == false) throw new Exception(res["message"]);
@@ -44,12 +49,11 @@ class RestDatasource {
 
       if (claim != "") {
         user = json.decode(claim);
+        user["token"] = res["token"];
         _API_TOKEN = res["token"];
       }
 
-      log("Token:" + _API_TOKEN);
       return new User.map(user);
-      return new User("_username");
     });
   }
 
@@ -57,8 +61,8 @@ class RestDatasource {
    * vpn kullanıcı bilgilerini alır
    */
   Future<VpnResultModel> getVpnUser() async {
-    log("Request Url " + BASE_URL + "/v2/mobileaccount/hub/list");
-    print("Login Url:" + BASE_URL + "/v2/mobileaccount/hub/list");
+    log("getVpnUser Url " + BASE_URL + "/v2/mobileaccount/hub/list");
+    print("getVpnUser Url:" + BASE_URL + "/v2/mobileaccount/hub/list");
     //
     // Map<String, String> header = {
     //   "Content-type": "application/json",
@@ -67,7 +71,6 @@ class RestDatasource {
     // };
 
     return _netUtil.get(BASE_URL + "/v2/mobileaccount/hub/list", header).then((dynamic res) {
-      log(res.toString());
       if (res["success"] == false) throw new Exception(res["message"]);
       Map<String, dynamic> vpnUserList;
       vpnUserList = res;
@@ -76,8 +79,8 @@ class RestDatasource {
   }
 
   Future<MobilHubModel> createHub(int id) async {
-    log("Request Url " + BASE_URL + "/v2/mobileaccount/createhub");
-    print("Login Url:" + BASE_URL + "/v2/mobileaccount/createhub");
+    log("getVpnUser Url " + BASE_URL + "/v2/mobileaccount/createhub");
+    print("getVpnUser Url:" + BASE_URL + "/v2/mobileaccount/createhub");
     return _netUtil
         .post(BASE_URL + "/v2/mobileaccount/createhub",
             body: {"id": id.toString()}, headers: header)

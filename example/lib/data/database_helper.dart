@@ -29,13 +29,16 @@ class DatabaseHelper {
 
   void _onCreate(Database db, int version) async {
     // When creating the db, create the table
-    await db.execute("CREATE TABLE User(id INTEGER PRIMARY KEY, username TEXT, password TEXT)");
+    await db.execute(
+        "CREATE TABLE User(id INTEGER PRIMARY KEY, username TEXT, name TEXT, email TEXT , token TEXT )");
     print("Created tables");
   }
 
   Future<int> saveUser(User user) async {
     var dbClient = await db;
-    int res = await dbClient.insert("User", user.toMap());
+    int res = await dbClient.insert("User", user.toMap()).catchError((onError) {
+      print(onError);
+    });
     return res;
   }
 
@@ -48,6 +51,13 @@ class DatabaseHelper {
   Future<bool> isLoggedIn() async {
     var dbClient = await db;
     var res = await dbClient.query("User");
-    return res.length > 0 ? true : false;
+    return res.length > 0 ? res : false;
+  }
+
+  Future<bool> deleteDb() async {
+    io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentsDirectory.path, "main.db");
+    await deleteDatabase(path);
+    return true;
   }
 }

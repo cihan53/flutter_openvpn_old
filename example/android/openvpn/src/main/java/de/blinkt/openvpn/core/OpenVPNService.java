@@ -211,6 +211,8 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             assert manager != null;
             manager.createNotificationChannel(chan);
 
+
+
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
 
             int priority;
@@ -229,6 +231,8 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             if (tickerText != null && !tickerText.equals("")) ticker = tickerText;
 
 
+            notificationBuilder.setContentIntent(getGraphPendingIntent());
+
             Notification notification = notificationBuilder.setOngoing(true)
                     .setSmallIcon(R.drawable.ic_connection_icon)
                     .setContentTitle(title)
@@ -236,7 +240,11 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
                     .setPriority(priority)
                     .setCategory(Notification.CATEGORY_SERVICE)
                     .setTicker(ticker)
+//                    .setAutoCancel(true)
                     .build();
+
+
+
             startForeground(2, notification);
         } else {
 
@@ -261,6 +269,8 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
             nbuilder.setOnlyAlertOnce(true);
             nbuilder.setOngoing(true);
             nbuilder.setSmallIcon(icon);
+
+
 
             if (status == LEVEL_WAITING_FOR_USER_INPUT)
                 nbuilder.setContentIntent(getUserInputIntent(msg));
@@ -372,8 +382,11 @@ public class OpenVPNService extends VpnService implements StateListener, Callbac
         }
         Intent intent = new Intent(getBaseContext(), activityClass);
         intent.putExtra("PAGE", "graph");
+//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
         PendingIntent startLW = PendingIntent.getActivity(this, 0, intent, 0);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         return startLW;
     }

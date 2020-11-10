@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Gradle: com.github.cihan53:flutter_openvpn_android_api:712c569632@aar" type="AndroidModuleLibraryType">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/5e6cbfd7375e3366a009162b0d53a64c/flutter_openvpn_android_api-712c569632/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/5e6cbfd7375e3366a009162b0d53a64c/flutter_openvpn_android_api-712c569632/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

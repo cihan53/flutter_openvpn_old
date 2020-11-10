@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'data/database_helper.dart';
+import 'data/rest_ds.dart';
 
 enum AuthState { LOGGED_IN, LOGGED_OUT }
 
@@ -21,12 +22,14 @@ class AuthStateProvider {
     initState();
   }
   void initState() async {
-//    var db = new DatabaseHelper();
-//    var isLoggedIn = await db.isLoggedIn();
-//    if (isLoggedIn)
-//      notify(AuthState.LOGGED_IN);
-//    else
-//      notify(AuthState.LOGGED_OUT);
+    var db = new DatabaseHelper();
+    var isLoggedIn = await db.isLoggedIn();
+    if (isLoggedIn) {
+      RestDatasource.API_TOKEN = isLoggedIn.toString();
+
+      notify(AuthState.LOGGED_IN);
+    } else
+      notify(AuthState.LOGGED_OUT);
   }
 
   void subscribe(AuthStateListener listener) {

@@ -4,12 +4,17 @@ import 'package:HubboxVpn/HubboxVpn.dart';
 import 'package:HubboxVpnApp/models/MobilHubModel.dart';
 import 'package:HubboxVpnApp/models/VpnResultModel.dart';
 import 'package:HubboxVpnApp/screen/vpn/vpn_request.dart';
+import 'package:HubboxVpnApp/store/VpnStatusStore.dart';
 import 'package:HubboxVpnApp/utils/Utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../global.dart' as globals;
+
 import '../LeftMenu.dart';
+
+final vpnStatusStore = VpnStatusStore();
 
 const bool isProduction = bool.fromEnvironment('dart.vm.product');
 
@@ -31,15 +36,13 @@ class Vpn extends StatefulWidget {
 
 class _Vpn extends State<Vpn> implements VpnRequestContract {
   final formKey = new GlobalKey<FormState>();
-  // final _scaffoldKey = new GlobalKey<ScaffoldState>();
-  bool _connected = false;
   bool _isLoading = false;
   VpnRequest _request;
   VpnResultModel _vpnUserList = new VpnResultModel(0, null);
 
   _Vpn() {
     _request = new VpnRequest(this);
-    init()
+    if (!vpnStatusStore.connected) init();
   }
 
   @override
@@ -51,7 +54,7 @@ class _Vpn extends State<Vpn> implements VpnRequestContract {
 
     HubboxVpn.vpnStatus.then((value) {
       log("VPN STATUS : " + value.toString());
-      setState(() => _connected = value);
+      setState(() => vpnStatusStore.connected = value);
     });
   }
 
@@ -62,14 +65,12 @@ class _Vpn extends State<Vpn> implements VpnRequestContract {
   }
 
   Future<dynamic> init() async {
-      await HubboxVpn.init(
-      localizedDescription: "HubboxVPN",
-      providerBundleIdentifier: "com.cihan53.HubboxVpnApp.RunnerExtension",
-    ).then((value) {
-        print(value);
-        Fluttertoast.showToast(msg: value.toString(), textColor: Colors.red);
-      });
-
+    await HubboxVpn.init(
+            providerBundleIdentifier: "HubboxVPN",
+            localizedDescription: "com.cihan53.HubboxVpnApp.RunnerExtension")
+        .then((value) {
+      Fluttertoast.showToast(msg: value.toString(), textColor: Colors.red);
+    });
   }
 
   Future<dynamic> _connect(_vpnUser) async {
@@ -78,31 +79,19 @@ class _Vpn extends State<Vpn> implements VpnRequestContract {
   }
 
   Widget _buildButtonColumn(Color color, IconData icon, String label, onTap) {
-    return GestureDetector(
-        onTap: onTap,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color),
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: color,
-                ),
-              ),
-            ),
-          ],
-        ));
+    return IconButton(
+      icon: Icon(icon, color: onTap == null ? Colors.black26 : color),
+      color: color,
+      disabledColor: Colors.black26,
+      onPressed: onTap,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    log("VPN STATUS2:" + _connected.toString());
+    log("VPN STATUS1:" + vpnStatusStore.connected.toString());
+    log("VPN STATUS2:" + vpnStatusStore.hub_id.toString());
+
     return Scaffold(
         key: globals.ScaffoldKey,
         drawer: NavDrawer(),
@@ -140,14 +129,27 @@ class _Vpn extends State<Vpn> implements VpnRequestContract {
                       : _vpnUserList.data[index].hubbox_alias;
 
                   title += "(" + _vpnUserList.data[index].alias + ")";
-                  return Container(
-                    decoration: const BoxDecoration(
+
+                  BoxDecoration myConnectColor = const BoxDecoration(
+                      color: null,
+                      border: Border(
+                        bottom: BorderSide(width: 1.0, color: Color.fromARGB(200, 200, 200, 200)),
+                      ));
+
+                  if (vpnStatusStore.connected &&
+                      vpnStatusStore.hub_id == _vpnUserList.data[index].id)
+                    myConnectColor = const BoxDecoration(
+                        color: Colors.lightGreen,
                         border: Border(
-                      bottom: BorderSide(width: 1.0, color: Color.fromARGB(200, 200, 200, 200)),
-                    )),
+                          bottom: BorderSide(width: 1.0, color: Color.fromARGB(200, 200, 200, 200)),
+                        ));
+
+                  return Container(
+                    decoration: myConnectColor,
                     padding: EdgeInsets.only(right: 5, left: 20),
                     alignment: Alignment.centerLeft,
                     // color: Colors.blue[200 + bottom[index] % 4 * 100],
+
                     height: 80,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -159,39 +161,25 @@ class _Vpn extends State<Vpn> implements VpnRequestContract {
                         ),
                         Expanded(
                             flex: 1,
-                            child: _buildButtonColumn(Colors.green, Icons.vpn_lock, '',
-                                !_connected ? () => _connect(_vpnUserList.data[index]) : null)),
+                            child: Observer(
+                              builder: (_) => _buildButtonColumn(
+                                  vpnStatusStore.connected ? Colors.white : Colors.green,
+                                  Icons.vpn_lock,
+                                  '',
+                                  !vpnStatusStore.connected
+                                      ? () => _connect(_vpnUserList.data[index])
+                                      : null),
+                            )),
                         Expanded(
-                            flex: 1,
-                            child: _buildButtonColumn(
-                                Colors.red, Icons.power_off, '', _connected ? _stop : null)),
-                        // Expanded(
-                        //   flex: 1,
-                        //   child: Container(
-                        //       margin: EdgeInsets.only(right: 0, left: 0),
-                        //       child: RaisedButton(
-                        //         padding: EdgeInsets.all(2),
-                        //         color: Colors.green,
-                        //         onPressed:
-                        //             !_connected ? () => _connect(_vpnUserList.data[index]) : null,
-                        //         child: Text('Connect',
-                        //             style: TextStyle(
-                        //                 fontSize: 8, color: Color.fromARGB(255, 255, 255, 255))),
-                        //       )),
-                        // ),
-                        //   Expanded(
-                        //       flex: 1,
-                        //       child: Container(
-                        //           margin: EdgeInsets.only(right: 0, left: 3),
-                        //           child: RaisedButton(
-                        //             color: Colors.red,
-                        //             disabledColor: Color.fromARGB(100, 255, 0, 0),
-                        //             padding: EdgeInsets.all(2),
-                        //             onPressed: _connected ? _stop : null,
-                        //             child: Text('Disconnect',
-                        //                 style: TextStyle(
-                        //                     fontSize: 8, color: Color.fromARGB(255, 255, 255, 255))),
-                        //           ))),
+                          flex: 1,
+                          child: Observer(
+                            builder: (_) => _buildButtonColumn(
+                                vpnStatusStore.connected ? Colors.red : Colors.grey,
+                                Icons.power_off,
+                                '',
+                                vpnStatusStore.connected ? _stop : null),
+                          ),
+                        ),
                       ],
                     ),
                   );
@@ -201,25 +189,6 @@ class _Vpn extends State<Vpn> implements VpnRequestContract {
               ),
             ),
           ],
-          // body: Center(
-          //   child: Column(
-          //     mainAxisSize: MainAxisSize.min,
-          //     children: <Widget>[
-          //       RaisedButton(
-          //         onPressed: !_connected ? _connect : null,
-          //         child: Text('Connect VPN', style: TextStyle(fontSize: 20)),
-          //       ),
-          //       RaisedButton(
-          //         onPressed: _connected ? Vpn.stop : null,
-          //         child: Text('Disconnect VPN', style: TextStyle(fontSize: 20)),
-          //       )
-          //     ],
-          //   ),
-//        child: Center(
-//          child: Text(
-//            page.toString(),
-//          ),
-//        ),
         ));
   }
 
@@ -244,21 +213,23 @@ class _Vpn extends State<Vpn> implements VpnRequestContract {
     // TODO: implement onVpnRequestSuccess
     if (result is VpnResultModel) {
       _vpnUserList = result as VpnResultModel;
-      // log("request success " + result.totalCount.toString());
-      // print("request success" + result.totalCount.toString());
-      if (widget.page == '0' && result.totalCount > 0 && !_connected) init();
+      if (widget.page == '0' && result.totalCount > 0 && !vpnStatusStore.connected) init();
       EasyLoading.dismiss();
-      setState(() => _isLoading = false);
     }
 
     if (result is MobilHubModel) {
       _toConnect(result);
     }
+
+    setState(() => _isLoading = true);
   }
 
-  Future<void> _stop() {
+  void _stop() {
     HubboxVpn.stopVPN();
-    setState(() => _connected = false);
+    setState(() {
+      vpnStatusStore.connected = false;
+      vpnStatusStore.hub_id = 0;
+    });
   }
 
   Future<dynamic> _toConnect(MobilHubModel vpnhub) async {
@@ -272,6 +243,8 @@ class _Vpn extends State<Vpn> implements VpnRequestContract {
     fileData = fileData.replaceAll("{hubname}", hubName);
     fileData = fileData.replaceAll("{password}", vpnhub.password);
 
+    // print('fileData ************************* : $fileData');
+
     await HubboxVpn.lunchVpn(
       fileData,
       (isProfileLoaded) {
@@ -279,23 +252,25 @@ class _Vpn extends State<Vpn> implements VpnRequestContract {
         log('isProfileLoaded : $isProfileLoaded');
       },
       (vpnActivated) {
-        log('vpnActivated ************************* : $vpnActivated');
+        print('vpnActivated ************************* : $vpnActivated');
         switch (vpnActivated) {
           case "EXITING":
           case "AUTH_FAILED":
             EasyLoading.dismiss();
-            setState(() => _isLoading = false);
-            // HubboxVpn.stopVPN();
             break;
           case "NOPROCESS":
-            //HubboxVpn.stopVPN();
-            //EasyLoading.dismiss();
-            setState(() => _connected = false);
+            setState(() {
+              vpnStatusStore.connected = false;
+              vpnStatusStore.hub_id = 0;
+            });
 
             break;
           case "CONNECTED":
             EasyLoading.dismiss();
-            setState(() => _connected = true);
+            setState(() {
+              vpnStatusStore.connected = true;
+              vpnStatusStore.hub_id = vpnhub.id;
+            });
 
             break;
         }

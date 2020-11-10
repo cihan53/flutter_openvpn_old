@@ -1,8 +1,9 @@
+import 'package:HubboxVpnApp/data/database_helper.dart';
 import 'package:HubboxVpnApp/models/User.dart';
 import 'package:HubboxVpnApp/screen/home/HomePage.dart';
 import 'package:HubboxVpnApp/screen/login/login_screen_presenter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../auth.dart';
 import '../../global.dart' as globals;
@@ -21,7 +22,22 @@ class _LoginPageState extends State<LoginPage> implements LoginScreenContract, A
   BuildContext _ctx;
   LoginScreenPresenter _presenter;
   bool _isLoading = false;
+  bool _isRembemerMe = false;
   String _username, _password;
+
+  // remberMe
+  bool get rememberMe => _isRembemerMe;
+
+  void handleRememberMe(bool value) {
+    print("Handle Rember Me");
+    _isRembemerMe = value;
+    SharedPreferences.getInstance().then(
+      (prefs) {
+        prefs.setBool("remember_me", value);
+      },
+    );
+    setState(() {});
+  }
 
   _LoginPageState() {
     _presenter = new LoginScreenPresenter(this);
@@ -47,6 +63,20 @@ class _LoginPageState extends State<LoginPage> implements LoginScreenContract, A
     globals.ScaffoldKey.currentState.showSnackBar(new SnackBar(content: new Text(text)));
   }
 
+  Widget remberMeCheckBox() {
+    return CheckboxListTile(
+      checkColor: Theme.of(context).primaryColor,
+      activeColor: Colors.red,
+      value: _isRembemerMe,
+      onChanged: handleRememberMe,
+      title: Text(
+        "Remember me",
+        style: TextStyle(color: Colors.red),
+      ),
+      controlAffinity: ListTileControlAffinity.leading,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _ctx = context;
@@ -64,7 +94,7 @@ class _LoginPageState extends State<LoginPage> implements LoginScreenContract, A
       onSaved: (val) => _username = val,
       keyboardType: TextInputType.text,
       autofocus: false,
-      initialValue: 'hbbx-154',
+      initialValue: 'hbbx-',
       validator: (val) {
         return val.length < 5 ? "Username must have atleast 5 chars" : null;
       },
@@ -78,7 +108,7 @@ class _LoginPageState extends State<LoginPage> implements LoginScreenContract, A
     final password = TextFormField(
       onSaved: (val) => _password = val,
       autofocus: false,
-      initialValue: '12345678.Abc',
+      initialValue: '',
       obscureText: true,
       decoration: InputDecoration(
         hintText: 'Password',
@@ -118,7 +148,8 @@ class _LoginPageState extends State<LoginPage> implements LoginScreenContract, A
           password,
           SizedBox(height: 24.0),
           _isLoading ? new CircularProgressIndicator() : loginButton,
-          forgotLabel
+          forgotLabel,
+          remberMeCheckBox()
         ]));
 
     return Scaffold(
@@ -157,8 +188,14 @@ class _LoginPageState extends State<LoginPage> implements LoginScreenContract, A
   Future<void> onLoginSuccess(User user) async {
     _showSnackBar(user.toString());
     setState(() => _isLoading = false);
-//    var db = new DatabaseHelper();
-//    await db.saveUser(user);
+    var db = new DatabaseHelper();
+
+    try {
+      await db.saveUser(user);
+    } catch (e) {
+      print(e);
+    }
+
     var authStateProvider = new AuthStateProvider();
     authStateProvider.notify(AuthState.LOGGED_IN);
   }

@@ -16,16 +16,24 @@ class HubboxVpn {
   static OnProfileStatusChanged _onProfileStatusChanged;
   static OnVPNStatusChanged _onVPNStatusChanged;
 
+  // HubboxVpn() {
+  //   _onVPNStatusChanged = __onVPNStatusChanged;
+  //   _onProfileStatusChanged = __onProfileStatusChanged;
+  // }
+  //
+  // __onVPNStatusChanged(String status) {}
+  //
+  // __onProfileStatusChanged(bool isProfileLoaded) {}
+
   static Future<String> get platformVersion async {
     final String version = await _channel.invokeMethod('getPlatformVersion');
     return version;
   }
+
   static Future<bool> get vpnStatus async {
-     bool s = await _channel.invokeMethod("vpnStatus") ;
-     return s;
+    bool s = await _channel.invokeMethod("vpnStatus");
+    return s;
   }
-
-
 
   /**
    * Vpn init
@@ -40,7 +48,9 @@ class HubboxVpn {
     });
 
     if (!(isInited is PlatformException) || isInited == null) {
-      _channel.setMethodCallHandler((call) {
+      _channel.setMethodCallHandler((call) async {
+        final String utterance = call.arguments;
+
         switch (call.method) {
           case _profileLoaded:
             _onProfileStatusChanged?.call(true);
@@ -51,10 +61,9 @@ class HubboxVpn {
           default:
             _onVPNStatusChanged?.call(call.method);
         }
-        return null;
       });
 
-      log("isInited "+ isInited.toString());
+      log("isInited " + isInited.toString());
       return isInited;
     } else {
       log('OpenVPN Initilization failed');
@@ -68,7 +77,7 @@ class HubboxVpn {
   /**
    * Lunch Vpn
    */
-  static Future<int> lunchVpn(String ovpnFileContents,
+  static Future<dynamic> lunchVpn(String ovpnFileContents,
       OnProfileStatusChanged onProfileStatusChanged, OnVPNStatusChanged onVPNStatusChanged,
       {DateTime expireAt}) async {
     _onProfileStatusChanged = onProfileStatusChanged;

@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.VpnService;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -28,6 +29,7 @@ public class OboloiVPN implements VpnStatus.ByteCountListener, VpnStatus.StateLi
     public static String ProfileName = "Hubbox";
     private static IOpenVPNServiceInternal mService;
     private ProfileAsync profileAsync;
+    private static Class mNotificationActivityClass;
 
     private boolean profileStatus;
 
@@ -41,6 +43,15 @@ public class OboloiVPN implements VpnStatus.ByteCountListener, VpnStatus.StateLi
     public void setOnVPNStatusChangeListener(OnVPNStatusChangeListener listener) {
         this.listener = listener;
     }
+    /**
+     * Sets the activity which should be opened when tapped on the permanent notification tile.
+     *
+     * @param activityClass The activity class to open
+     */
+    public static void setNotificationActivityClass(Class<? extends Activity> activityClass) {
+        mNotificationActivityClass = activityClass;
+    }
+
 
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
@@ -113,6 +124,8 @@ public class OboloiVPN implements VpnStatus.ByteCountListener, VpnStatus.StateLi
         VpnStatus.addStateListener(this);
         VpnStatus.addByteCountListener(this);
         VpnStatus.addLogListener(this);
+        OpenVPNService.setNotificationActivityClass(mNotificationActivityClass);
+
         //Intent intent = new Intent(activity, OpenVPNService.class);
         //intent.setAction(OpenVPNService.START_SERVICE);
         //activity.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);

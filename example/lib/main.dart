@@ -6,6 +6,7 @@ import 'package:HubboxVpnApp/screen/home/HomePage.dart';
 import 'package:flutter/material.dart';
 
 import 'auth.dart';
+import 'data/database_helper.dart';
 import 'screen/login/loginPage.dart';
 import 'screen/vpn/Vpn.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -27,8 +28,8 @@ void main() {
           Uint8List feedbackScreenshot,
         ) {
           /**
-           * upload
-           */
+               * upload
+               */
 
           var event = Event(
             message: feedbackText,
@@ -74,7 +75,10 @@ class MyApp extends StatefulWidget {
     /**
      * vpn stop yap
      */
-    Vpn.stop();
+    if (vpnStatusStore.connected) Vpn.stop();
+
+    var db = new DatabaseHelper();
+    db.deleteUsers();
   }
 
   @override
@@ -94,7 +98,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    Vpn.stop();
+    if (vpnStatusStore.connected) Vpn.stop();
     WidgetsBinding.instance.removeObserver(this);
 
     super.dispose();
