@@ -2,8 +2,9 @@ import 'dart:developer';
 
 import 'data/database_helper.dart';
 import 'data/rest_ds.dart';
+import 'global.dart';
 
-enum AuthState { LOGGED_IN, LOGGED_OUT }
+enum AuthState { LOGGED_IN, LOGGED_OUT, NOT_LOGIN }
 
 abstract class AuthStateListener {
   void onAuthStateChanged(AuthState state);
@@ -23,13 +24,20 @@ class AuthStateProvider {
   }
   void initState() async {
     var db = new DatabaseHelper();
-    var isLoggedIn = await db.isLoggedIn();
-    if (isLoggedIn) {
-      RestDatasource.API_TOKEN = isLoggedIn.toString();
-
-      notify(AuthState.LOGGED_IN);
-    } else
-      notify(AuthState.LOGGED_OUT);
+    try {
+      var isLoggedIn = await db.isLoggedIn();
+      if (isLoggedIn) {
+        var user = await db.getUser();
+        RestDatasource.API_TOKEN = user.token;
+        notify(AuthState.LOGGED_IN);
+      } else
+        notify(AuthState.NOT_LOGIN);
+    } catch (error, stackTrace) {
+      await sentry.captureException(
+        exception: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   void subscribe(AuthStateListener listener) {

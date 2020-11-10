@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:HubboxVpnApp/data/database_helper.dart';
 import 'package:HubboxVpnApp/models/User.dart';
 import 'package:HubboxVpnApp/screen/home/HomePage.dart';
@@ -7,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../auth.dart';
 import '../../global.dart' as globals;
+import '../../global.dart';
 
 class LoginPage extends StatefulWidget {
   static String tag = 'login-page';
@@ -17,6 +20,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> implements LoginScreenContract, AuthStateListener {
   final formKey = new GlobalKey<FormState>();
+
   // final scaffoldKey = new GlobalKey<ScaffoldState>();
 
   BuildContext _ctx;
@@ -64,14 +68,21 @@ class _LoginPageState extends State<LoginPage> implements LoginScreenContract, A
   }
 
   Widget remberMeCheckBox() {
+    return Row(children: <Widget>[
+      Checkbox(
+        value: _isRembemerMe,
+        onChanged: handleRememberMe,
+      ),
+      Expanded(child: Text("Remember me", style: TextStyle(color: Colors.black87))),
+    ]);
     return CheckboxListTile(
+      contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
       checkColor: Theme.of(context).primaryColor,
-      activeColor: Colors.red,
       value: _isRembemerMe,
       onChanged: handleRememberMe,
       title: Text(
         "Remember me",
-        style: TextStyle(color: Colors.red),
+        style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w500, fontSize: 14),
       ),
       controlAffinity: ListTileControlAffinity.leading,
     );
@@ -148,8 +159,15 @@ class _LoginPageState extends State<LoginPage> implements LoginScreenContract, A
           password,
           SizedBox(height: 24.0),
           _isLoading ? new CircularProgressIndicator() : loginButton,
-          forgotLabel,
-          remberMeCheckBox()
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Expanded(
+              flex: 1,
+              child: remberMeCheckBox(),
+            ),
+            Expanded(
+              child: forgotLabel,
+            )
+          ]),
         ]));
 
     return Scaffold(
@@ -186,16 +204,19 @@ class _LoginPageState extends State<LoginPage> implements LoginScreenContract, A
 
   @override
   Future<void> onLoginSuccess(User user) async {
-    _showSnackBar(user.toString());
+    // _showSnackBar(user.toString());
     setState(() => _isLoading = false);
-    var db = new DatabaseHelper();
-
-    try {
-      await db.saveUser(user);
-    } catch (e) {
-      print(e);
+    if (_isRembemerMe) {
+      var db = new DatabaseHelper();
+      try {
+        await db.saveUser(user);
+      } catch (error, stackTrace) {
+        await sentry.captureException(
+          exception: error,
+          stackTrace: stackTrace,
+        );
+      }
     }
-
     var authStateProvider = new AuthStateProvider();
     authStateProvider.notify(AuthState.LOGGED_IN);
   }

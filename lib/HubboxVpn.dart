@@ -17,6 +17,7 @@ class HubboxVpn {
   static OnVPNStatusChanged _onVPNStatusChanged;
 
   // HubboxVpn() {
+
   //   _onVPNStatusChanged = __onVPNStatusChanged;
   //   _onProfileStatusChanged = __onProfileStatusChanged;
   // }

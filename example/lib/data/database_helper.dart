@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io' as io;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -37,7 +38,7 @@ class DatabaseHelper {
   Future<int> saveUser(User user) async {
     var dbClient = await db;
     int res = await dbClient.insert("User", user.toMap()).catchError((onError) {
-      print(onError);
+      log(onError);
     });
     return res;
   }
@@ -51,7 +52,13 @@ class DatabaseHelper {
   Future<bool> isLoggedIn() async {
     var dbClient = await db;
     var res = await dbClient.query("User");
-    return res.length > 0 ? res : false;
+    return res.length > 0 ? true : false;
+  }
+
+  Future<User> getUser() async {
+    var dbClient = await db;
+    var res = await dbClient.query("User", columns: ["username", "name", "email", "token"]);
+    return res.length > 0 ? new User.map(res.first) : null;
   }
 
   Future<bool> deleteDb() async {

@@ -1,22 +1,17 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
-
+import 'package:sentry/sentry.dart';
 import 'package:HubboxVpnApp/screen/home/HomePage.dart';
+import 'package:feedback/feedback.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
-import 'auth.dart';
 import 'data/database_helper.dart';
+import 'global.dart';
 import 'screen/login/loginPage.dart';
 import 'screen/vpn/Vpn.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:feedback/feedback.dart';
-import 'package:sentry/sentry.dart';
 
 const bool isProduction = bool.fromEnvironment('dart.vm.product');
-
-final sentry =
-    SentryClient(dsn: "https://65081ee149d04d8b81ec78a3f09c1d6f@o455652.ingest.sentry.io/5447525");
 
 void main() {
   runZonedGuarded(

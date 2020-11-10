@@ -40,7 +40,6 @@ class HomePage extends StatelessWidget {
       color: Colors.white,
       width: MediaQuery.of(context).size.width,
       padding: EdgeInsets.all(28.0),
-
 //      decoration: BoxDecoration(
 //        gradient: LinearGradient(colors: [
 //          Colors.blue,
