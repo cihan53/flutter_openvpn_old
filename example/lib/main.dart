@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:HubboxVpnApp/screen/boxes/Boxes.dart';
 import 'package:HubboxVpnApp/store/VpnStatusStore.dart';
-// import 'package:sentry/sentry.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:sentry/sentry.dart';
 import 'package:HubboxVpnApp/screen/home/HomePage.dart';
 import 'package:feedback/feedback.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'data/database_helper.dart';
 import 'global.dart';
@@ -18,44 +16,32 @@ import 'screen/vpn/Vpn.dart';
 const bool isProduction = bool.fromEnvironment('dart.vm.product');
 final vpnStatusStore = VpnStatusStore();
 
-Future<void> main() async {
-  await SentryFlutter.init(
-    (options) =>
-        options.dsn = 'https://d768189f38994c318b2de1d0f230b917@o455652.ingest.sentry.io/5452849',
-    () {
-      // Run your App
-      runZonedGuarded(
-        () => runApp(BetterFeedback(
-            child: MyApp(),
-            onFeedback: (
-              BuildContext context,
-              String feedbackText,
-              Uint8List feedbackScreenshot,
-            ) {
-              /**
-                   * upload
-                   */
+void main() {
+  runZonedGuarded(
+    () => runApp(BetterFeedback(
+        child: MyApp(),
+        onFeedback: (
+          BuildContext context,
+          String feedbackText,
+          Uint8List feedbackScreenshot,
+        ) {
+          /**
+               * upload
+               */
 
-              // var event = Event(
-              //   message: feedbackText,
-              //   exception: "Mobil Uygulama",
-              //   //extra: {"feedbackScreenshot": base64Encode(feedbackScreenshot)},
-              // );
-              // sentry.capture(event: event).whenComplete(() => null);
-
-              Sentry.captureException(
-                feedbackText,
-                stackTrace: "Mobil Uygulama",
-              );
-
-              BetterFeedback.of(context).hide();
-            })),
-        (error, stackTrace) async {
-          await Sentry.captureException(
-            error,
-            stackTrace: stackTrace,
+          var event = Event(
+            message: feedbackText,
+            exception: "Mobil Uygulama",
+            //extra: {"feedbackScreenshot": base64Encode(feedbackScreenshot)},
           );
-        },
+          sentry.capture(event: event).whenComplete(() => null);
+
+          BetterFeedback.of(context).hide();
+        })),
+    (error, stackTrace) async {
+      await sentry.captureException(
+        exception: error,
+        stackTrace: stackTrace,
       );
     },
   );
