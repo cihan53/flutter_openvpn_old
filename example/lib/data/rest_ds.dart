@@ -18,18 +18,31 @@ class RestDatasource {
   static final BASE_URL = isProduction ? "https://my.hubbox.io/api" : "https://my.hubbox.io/api";
   static final LOGIN_URL = BASE_URL + "/v2/mobileaccount/authenticateMobile";
   static String _API_TOKEN = "";
-
   static String get API_TOKEN => _API_TOKEN;
 
   static set API_TOKEN(String value) {
     _API_TOKEN = value;
   }
 
+  String controller;
+
   Map<String, String> header = {
     // "Content-type": "application/json",
     "Accept": "application/json",
     "authorization": "Basic " + base64.encode(utf8.encode(_API_TOKEN))
   };
+
+  Future<dynamic> load(Map<String, dynamic> params, {String action = "load"}) async {
+    return _netUtil.get(BASE_URL + "/v2/$controller/$action", header).then((dynamic res) {
+      if (res["success"] == false) throw new Exception(res["message"]);
+      Map<String, dynamic> data;
+      return data;
+    });
+  }
+
+  Future<dynamic> get() {}
+  @override
+  Future<dynamic> post() {}
 
   Future<User> login(String username, String password) async {
     log("Login Url " + LOGIN_URL);
