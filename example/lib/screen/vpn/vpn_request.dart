@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:HubboxVpnApp/data/rest_ds.dart';
 
 abstract class VpnRequestContract {

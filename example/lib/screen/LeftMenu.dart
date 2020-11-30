@@ -1,3 +1,4 @@
+import 'package:HubboxVpnApp/screen/boxes/Boxes.dart';
 import 'package:flutter/material.dart';
 import 'package:feedback/feedback.dart';
 import 'package:HubboxVpnApp/main.dart';
@@ -27,13 +28,13 @@ class NavDrawer extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.security),
-            title: Text('VPN'),
+            title: Text('M2M'),
             onTap: () => {Navigator.of(context).pushReplacementNamed(Vpn.tag)},
           ),
           // ListTile(
-          //   leading: Icon(Icons.verified_user),
-          //   title: Text('Profile'),
-          //   onTap: () => {Navigator.of(context).pop()},
+          //   leading: Icon(Icons.device_hub),
+          //   title: Text('Devices'),
+          //   onTap: () => {Navigator.of(context).pushReplacementNamed(Boxes.tag)},
           // ),
           // ListTile(
           //   leading: Icon(Icons.settings),
@@ -53,7 +54,6 @@ class NavDrawer extends StatelessWidget {
             title: Text('Logout'),
             onTap: () {
               Navigator.of(context).pushReplacementNamed(LoginPage.tag);
-
               MyApp.logout();
             },
           ),
